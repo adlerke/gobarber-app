@@ -1,9 +1,10 @@
-import React, { useRef, useCallback, useContext } from "react";
+import React, { useRef, useCallback } from "react";
 import { Container, Content, Background } from "./styles";
 import { FiLogIn, FiMail, FiLock } from "react-icons/fi";
 import logoImg from "../../assets/logo.svg";
 
-import { AuthContext } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/auth";
+import { useToast } from "../../hooks/toast";
 
 import { FormHandles } from "@unform/core";
 import { Form } from "@unform/web";
@@ -14,6 +15,7 @@ import Button from "../../components/Button";
 import * as Yup from "yup";
 
 import getValidationErrors from "../../utils/getValidationErrors";
+import { Link } from "react-router-dom";
 
 interface SignInData {
   email: string;
@@ -23,9 +25,10 @@ interface SignInData {
 const SignIn: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
 
-  const { user, signIn } = useContext(AuthContext);
+  const { user, signIn } = useAuth();
+  const { addToast } = useToast();
 
-  console.log(user)
+  console.log(user);
 
   const handleSubmit = useCallback(
     async (data: SignInData) => {
@@ -43,17 +46,31 @@ const SignIn: React.FC = () => {
         await schema.validate(data, {
           abortEarly: false,
         });
-        signIn({
+        await signIn({
           email: data.email,
           password: data.password,
         });
+        addToast({
+          type: "success",
+          title: "Autenticado",
+          description: "Autenticação realizada com sucesso",
+        });
       } catch (error) {
-        const errors = getValidationErrors(error);
-        formRef.current?.setErrors(errors);
-        console.log(error);
+        if (error instanceof Yup.ValidationError) {
+          const errors = getValidationErrors(error);
+
+          formRef.current?.setErrors(errors);
+
+          return;
+        }
+        addToast({
+          type: "error",
+          title: "Erro na autenticação",
+          description: "Erro na autenticação, cheque as credenciais",
+        });
       }
     },
-    [signIn]
+    [signIn, addToast]
   );
   return (
     <>
@@ -74,10 +91,10 @@ const SignIn: React.FC = () => {
 
             <a href="forgot">Esqueci minha senha</a>
           </Form>
-          <a href="criar">
+          <Link to="/sign-up">
             <FiLogIn />
             Criar conta
-          </a>
+          </Link>
         </Content>
         <Background />
       </Container>

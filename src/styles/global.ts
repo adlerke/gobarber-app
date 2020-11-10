@@ -11,7 +11,7 @@ body {
     background: #312e38;
     color: #fff;
     -webkit-font-smoothing: antialiased;
-    animation: fadein 0.6s linear;
+    
 
 }
 
@@ -24,18 +24,6 @@ h1,h2,h3,h4,h5,h6,strong {
 }
 button{
     cursor: pointer;
-}
-
-@keyframes fadein{
-
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-
-  }
 }
 
 `;
